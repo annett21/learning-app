@@ -11,6 +11,7 @@ python = "^3.11"
 Django = "^4.1.7"
 djangorestframework = "^3.14.0"
 python-dotenv = "^0.21.1"
+psycopg2 = "^2.9.5"
 
 [tool.poetry.group.dev.dependencies]
 ptpython = "^3.0.22"
