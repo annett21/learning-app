@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "learning-app"
+version = "0.1.0"
+description = ""
+authors = ["annett21 <annettarasevich@gmail.com>"]
+readme = "README.md"
+packages = [{include = "learning_app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+Django = "^4.1.7"
+djangorestframework = "^3.14.0"
+
+[tool.poetry.group.dev.dependencies]
+ptpython = "^3.0.22"
+black = "^23.1.0"
+flake8 = "^6.0.0"
+django-extensions = "^3.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
