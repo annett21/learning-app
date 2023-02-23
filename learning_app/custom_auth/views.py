@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
@@ -8,6 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from .models import User
 from .serializers import RegistrationSerializer, SimpleUserSerializer
+from .utils import create_password, create_username
 
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
@@ -19,15 +22,20 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     serializer_class = SimpleUserSerializer
     permission_classes = (AllowAny,)
 
-
-    @action(methods=['post'], detail=False,
-            url_path='register', url_name='register')
+    @action(methods=["post"], detail=False)
     def register(self, request):
         """
-        Sent mail with generated username and password
-        just check is user in db
+        Sending email with temporary username and password if user in db.
         """
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        get_object_or_404(User, **serializer.validated_data)
+        user = get_object_or_404(User, **serializer.validated_data)
+        password = create_password()
+        username = create_username(user.email)
+        send_mail(
+            subject="Credentials for registration",
+            message=f"Here is your temporary password {password} and username {username}. Tap link to change.",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user.email],
+        )
         return Response(status=status.HTTP_200_OK)
