@@ -1,25 +1,25 @@
 from django.contrib import admin
+
 from .models import User
 
 
 @admin.register(User)
 class AdminUser(admin.ModelAdmin):
-    list_display = ["email", "document_number"]
-    list_filter = ["is_student", "is_professor"]
+    list_display = ("email", "document_number")
+    list_filter = ("role",)
 
     fieldsets = (
         (
             "Profile",
             {
                 "fields": [
-                    "username",
                     "password",
                     "first_name",
                     "last_name",
                     "email",
                     "document_number",
-                    "is_student",
-                    "is_professor",
+                    "role",
+                    "last_login",
                 ]
             },
         ),
@@ -30,4 +30,4 @@ class AdminUser(admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("password", "date_joined", "username")
+    readonly_fields = ("password", "date_joined")
