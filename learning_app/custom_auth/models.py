@@ -6,14 +6,16 @@ from django.utils.translation import gettext_lazy as _
 
 class UserManager(BaseUserManager):
     def create_superuser(self, email, password):
-        superuser = self.model(email=self.normalize_email(email), role=User.UserRole.ADMIN)
+        superuser = self.model(
+            email=self.normalize_email(email), role=User.Role.ADMIN
+        )
         superuser.set_password(password)
         superuser.save(using=self._db)
         return superuser
 
 
 class User(AbstractBaseUser):
-    class UserRole(models.TextChoices):
+    class Role(models.TextChoices):
         ADMIN = "AD", _("Admin")
         PROFESSOR = "PR", _("Professor")
         STUDENT = "ST", _("Student")
@@ -21,8 +23,8 @@ class User(AbstractBaseUser):
 
     role = models.CharField(
         max_length=4,
-        choices=UserRole.choices,
-        default=UserRole.OUT_OF_ROLE,
+        choices=Role.choices,
+        default=Role.OUT_OF_ROLE,
     )
     password = models.CharField(max_length=128, null=True)
     first_name = models.CharField(max_length=16, blank=True)
@@ -35,14 +37,6 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-
-    def clean(self):
-        super().clean()
-        if not self.role in {
-            self.UserRole.PROFESSOR,
-            self.UserRole.STUDENT,
-        }:
-            raise ValidationError("User must be a student OR a professor.")
 
     def __str__(self):
         return self.email
@@ -58,8 +52,5 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         "Is the user a member of staff?"
-        if self.role == self.UserRole.ADMIN:
+        if self.role == self.Role.ADMIN:
             return True
-
-
-
