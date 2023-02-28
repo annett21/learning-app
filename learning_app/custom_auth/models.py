@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -19,6 +18,7 @@ class User(AbstractBaseUser):
         ADMIN = "AD", _("Admin")
         PROFESSOR = "PR", _("Professor")
         STUDENT = "ST", _("Student")
+        GUEST = "GU", _("Guest")
         OUT_OF_ROLE = "OOR", _("Out of role")
 
     role = models.CharField(

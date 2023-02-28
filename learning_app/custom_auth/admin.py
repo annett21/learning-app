@@ -7,11 +7,12 @@ from .models import User
 
 
 class UserChangeForm(forms.ModelForm):
-    """A form for updating users."""
+    """A form for updating users. Gives only two options for role choices."""
 
     role_choices = (
         (User.Role.PROFESSOR, User.Role.PROFESSOR.label),
         (User.Role.STUDENT, User.Role.STUDENT.label),
+        (User.Role.GUEST, User.Role.GUEST.label),
     )
 
     role = forms.ChoiceField(choices=role_choices)
@@ -27,31 +28,33 @@ class RolesListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         """
-        Returns a list of tuples.
-
+        Returns a list of tuples...
         """
         return (
             (User.Role.PROFESSOR, User.Role.PROFESSOR.label),
             (User.Role.STUDENT, User.Role.STUDENT.label),
+            (User.Role.GUEST, User.Role.GUEST.label),
         )
 
     def queryset(self, request, queryset):
         """
         Returns the filtered queryset based on the value
         provided in the query string and retrievable via
-        `self.value()`.
+        `self.value()`...
         """
-        if self.value() == User.Role.STUDENT:
-            return queryset.filter(role=User.Role.STUDENT)
         if self.value() == User.Role.PROFESSOR:
             return queryset.filter(role=User.Role.PROFESSOR)
+        if self.value() == User.Role.STUDENT:
+            return queryset.filter(role=User.Role.STUDENT)
+        if self.value() == User.Role.GUEST:
+            return queryset.filter(role=User.Role.GUEST)
 
 
 @admin.register(User)
 class AdminUser(admin.ModelAdmin):
     form = UserChangeForm
 
-    list_display = ("email", "document_number")
+    list_display = ("email", "document_number", "role")
     list_filter = (RolesListFilter,)
 
     fieldsets = (
@@ -82,7 +85,7 @@ class AdminUser(admin.ModelAdmin):
         return (
             super()
             .get_queryset(request)
-            .filter(role__in=(User.Role.PROFESSOR, User.Role.STUDENT))
+            .filter(role__in=(User.Role.PROFESSOR, User.Role.STUDENT, User.Role.GUEST))
         )
 
 
