@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import send_mail
+
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
@@ -13,6 +13,8 @@ from .models import User
 from .serializers import (ActivateEmailParamsSerializer,
                           RegistrationSerializer, SimpleUserSerializer)
 from .tokens import account_activation_token
+
+from .tasks import send_email
 
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
@@ -48,15 +50,14 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         user.is_active = True
         user.set_password(password)
         user.save()
-        send_mail(
+        send_email.delay(
             subject="Email confirmation",
             message=(
                 self.reverse_action("activate-email")
                 + f"?uidb64={urlsafe_base64_encode(force_bytes(user.pk))}"
                 + f"&token={account_activation_token.make_token(user)}"
             ),
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[user.email],
+            email=user.email,
         )
 
         return Response(status=status.HTTP_200_OK)
