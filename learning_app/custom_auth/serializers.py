@@ -7,6 +7,8 @@ from rest_framework.serializers import ModelSerializer, Serializer
 
 from .models import User
 from .tokens import account_activation_token
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import check_password
 
 
 class SimpleUserSerializer(ModelSerializer):
@@ -15,20 +17,26 @@ class SimpleUserSerializer(ModelSerializer):
         fields = "__all__"
 
 
-class RegistrationSerializer(Serializer):
+class PasswordValidationMixin:
+    def validate_password(self, password):
+        validate_password(password)
+        return password
+    
+    def validate(self, data):
+        if data["password"] != data["confirmation_password"]:
+            raise serializers.ValidationError({"confirmation_password": "Password fields didn't match."})
+        data.pop("confirmation_password")
+        return data
+
+
+class RegistrationSerializer(PasswordValidationMixin, Serializer):
     email = serializers.EmailField()
     document_number = serializers.CharField(max_length=16)
     password = serializers.CharField(max_length=128, write_only=True, required=True)
     confirmation_password = serializers.CharField(max_length=128, write_only=True, required=True)
-
-    class Meta:
-        fields = ["email", "document_number", "password", "confirmation_password"]
-
+    
     def validate(self, data):
-        if data["password"] != data["confirmation_password"]:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-        
-        data.pop("confirmation_password")
+        data = super().validate(data)
         if User.objects.filter(
             (Q(email=data["email"]) & ~Q(document_number=data["document_number"]))
             | (~Q(email=data["email"]) & Q(document_number=data["document_number"]))
@@ -54,3 +62,16 @@ class ActivateEmailParamsSerializer(Serializer):
         data["user"] = user
 
         return data
+
+
+class ChangePasswordSerializer(PasswordValidationMixin, Serializer):
+    old_password = serializers.CharField(max_length=128, write_only=True, required=True)
+    password = serializers.CharField(max_length=128, write_only=True, required=True)
+    confirmation_password = serializers.CharField(max_length=128, write_only=True, required=True)
+
+    def validate_old_password(self, old_password):
+        password = self.context["user"].password
+        if not check_password(old_password, password):
+            raise serializers.ValidationError("Wrong password.")
+        return old_password
+    

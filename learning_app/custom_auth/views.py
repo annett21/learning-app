@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
@@ -10,11 +8,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .models import User
+from .permissions import IsEmailConfirmed
 from .serializers import (ActivateEmailParamsSerializer,
-                          RegistrationSerializer, SimpleUserSerializer)
-from .tokens import account_activation_token
-
+                          ChangePasswordSerializer, RegistrationSerializer,
+                          SimpleUserSerializer)
 from .tasks import send_email
+from .tokens import account_activation_token
 
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
@@ -79,6 +78,25 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     @action(methods=["get"], detail=False, permission_classes=[IsAuthenticated])
     def ping(self, request):
         """
-        Check if auth works.
+        The crucial view. Do not change this!!!
         """
         return Response("Pong!")
+
+    @action(methods=["post", "get"], detail=False, permission_classes=[IsAuthenticated, IsEmailConfirmed])
+    def reset_password(self, request):
+        """
+        Change password.
+        """
+        serializer = ChangePasswordSerializer(data=request.data, context={"user": request.user})
+        serializer.is_valid(raise_exception=True)
+
+        password = serializer.validated_data["password"]
+        request.user.set_password(password)
+        request.user.save()
+
+        send_email.delay(
+            subject="Reset password",
+            message=("Password successfully changed, if it wasn't you contact support."),
+            email=request.user.email,
+        )
+        return Response(status=status.HTTP_200_OK)
