@@ -5,7 +5,7 @@ from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -74,3 +74,10 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         user.save()
 
         return Response("Thank you for email confirmation!")
+
+    @action(methods=["get"], detail=False, permission_classes=[IsAuthenticated])
+    def ping(self, request):
+        """
+        Check if auth works.
+        """
+        return Response("Pong!")
