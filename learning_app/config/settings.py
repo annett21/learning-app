@@ -14,6 +14,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
 EMAIL_HOST = "smtp.yandex.by"
 EMAIL_PORT = 465
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
@@ -33,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "custom_auth",
+    "rest_framework.authtoken",
 ]
 
 MIDDLEWARE = [

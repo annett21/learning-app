@@ -35,7 +35,8 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         password = serializer.validated_data.pop("password")
 
         user, created = User.objects.get_or_create(
-            defaults={"role": User.Role.GUEST}, **serializer.validated_data,
+            defaults={"role": User.Role.GUEST},
+            **serializer.validated_data,
         )
 
         if not created and user.is_active:
@@ -59,7 +60,6 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         )
 
         return Response(status=status.HTTP_200_OK)
-
 
     @action(methods=["get"], detail=False)
     def activate_email(self, request):
