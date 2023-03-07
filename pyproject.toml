@@ -13,6 +13,7 @@ djangorestframework = "^3.14.0"
 python-dotenv = "^0.21.1"
 psycopg2 = "^2.9.5"
 six = "^1.16.0"
+celery = {extras = ["redis"], version = "^5.2.7"}
 
 [tool.poetry.group.dev.dependencies]
 ptpython = "^3.0.22"
