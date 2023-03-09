@@ -10,8 +10,8 @@ from rest_framework.viewsets import GenericViewSet
 from .models import User
 from .permissions import IsEmailConfirmed
 from .serializers import (ActivateEmailParamsSerializer,
-                          ChangePasswordSerializer, RegistrationSerializer,
-                          SimpleUserSerializer)
+                          ChangePasswordSerializer, EmailSerializer,
+                          RegistrationSerializer, SimpleUserSerializer)
 from .tasks import send_email
 from .tokens import account_activation_token
 
@@ -75,28 +75,69 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
         return Response("Thank you for email confirmation!")
 
-    @action(methods=["get"], detail=False, permission_classes=[IsAuthenticated])
+    @action(
+        methods=["get"], detail=False, permission_classes=[IsAuthenticated]
+    )
     def ping(self, request):
         """
         The crucial view. Do not change this!!!
         """
         return Response("Pong!")
 
-    @action(methods=["post", "get"], detail=False, permission_classes=[IsAuthenticated, IsEmailConfirmed])
+    @action(
+        methods=["post", "get"],
+        detail=False,
+        permission_classes=[IsAuthenticated, IsEmailConfirmed],
+    )
     def reset_password(self, request):
         """
         Change password.
         """
-        serializer = ChangePasswordSerializer(data=request.data, context={"user": request.user})
+        user = request.user
+        serializer = ChangePasswordSerializer(
+            data=request.data, context={"user": user}
+        )
         serializer.is_valid(raise_exception=True)
 
         password = serializer.validated_data["password"]
-        request.user.set_password(password)
-        request.user.save()
+        user.set_password(password)
+        user.save()
 
         send_email.delay(
             subject="Reset password",
-            message=("Password successfully changed, if it wasn't you contact support."),
-            email=request.user.email,
+            message=(
+                "Password successfully changed, if it wasn't you contact support."
+            ),
+            email=user.email,
         )
+        return Response(status=status.HTTP_200_OK)
+
+    @action(
+        methods=["post", "get"],
+        detail=False,
+        permission_classes=[IsAuthenticated, IsEmailConfirmed],
+    )
+    def reset_email(self, request):
+        """
+        Change email.
+        """
+        user = request.user
+        serializer = EmailSerializer(data=request.data, context={"user": user})
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+        user.email = email
+        user.email_confirmed = False
+        user.save()
+
+        send_email.delay(
+            subject="Email confirmation. Email has been changed.",
+            message=(
+                self.reverse_action("activate-email")
+                + f"?uidb64={urlsafe_base64_encode(force_bytes(user.pk))}"
+                + f"&token={account_activation_token.make_token(user)}"
+            ),
+            email=email,
+        )
+
         return Response(status=status.HTTP_200_OK)

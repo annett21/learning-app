@@ -1,14 +1,13 @@
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
-
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from .models import User
 from .tokens import account_activation_token
-from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.hashers import check_password
 
 
 class SimpleUserSerializer(ModelSerializer):
@@ -75,3 +74,14 @@ class ChangePasswordSerializer(PasswordValidationMixin, Serializer):
             raise serializers.ValidationError("Wrong password.")
         return old_password
     
+
+class EmailSerializer(Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, email):
+        current_email = self.context["user"].email
+
+        if email == current_email:
+            raise serializers.ValidationError("This is already your current email.")
+
+        return email
