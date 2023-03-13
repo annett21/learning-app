@@ -10,10 +10,11 @@ from .models import User
 from .tokens import account_activation_token
 
 
-class SimpleUserSerializer(ModelSerializer):
+class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ("role", "email", "first_name", "last_name", "document_number", "email_confirmed")
+        read_only_fields = ("role", "email", "email_confirmed")
 
 
 class PasswordValidationMixin:

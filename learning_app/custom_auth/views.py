@@ -2,7 +2,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -11,21 +11,21 @@ from .models import User
 from .permissions import IsEmailConfirmed
 from .serializers import (ActivateEmailParamsSerializer,
                           ChangePasswordSerializer, EmailSerializer,
-                          RegistrationSerializer, SimpleUserSerializer)
+                          RegistrationSerializer, UserSerializer)
 from .tasks import send_email
 from .tokens import account_activation_token
 
 
-class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
+class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     """
-    A viewset that provides the retrieve and list model actions.
+    A viewset that provides the retrieve, list and update model actions.
     """
 
     queryset = User.objects.all()
-    serializer_class = SimpleUserSerializer
-    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
 
-    @action(methods=["post"], detail=False)
+    @action(methods=["post"], detail=False, permission_classes=[AllowAny])
     def register(self, request):
         """
         Check if user in db or create user and send activation link.
@@ -61,7 +61,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
-    @action(methods=["get"], detail=False)
+    @action(methods=["get"], detail=False, permission_classes=[AllowAny])
     def activate_email(self, request):
         """
         Change email_confirmed db field if id and token validated.
@@ -91,7 +91,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     )
     def reset_password(self, request):
         """
-        Change password.
+        Change password, if current is valid.
         """
         user = request.user
         serializer = ChangePasswordSerializer(
@@ -119,7 +119,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     )
     def reset_email(self, request):
         """
-        Change email.
+        Change current email if it has been confirmed and send confirmation email to a new one.
         """
         user = request.user
         serializer = EmailSerializer(data=request.data, context={"user": user})
