@@ -79,7 +79,7 @@ class AdminUser(admin.ModelAdmin):
             },
         ),
     )
-    readonly_fields = ("password", "date_joined")
+    readonly_fields = ("password", "date_joined", "is_active")
 
     def get_queryset(self, request):
         return (
