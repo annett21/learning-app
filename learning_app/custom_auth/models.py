@@ -30,8 +30,9 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=16, blank=True)
     last_name = models.CharField(max_length=16, blank=True)
     email = models.EmailField(unique=True)
+    email_confirmed = models.BooleanField(default=False)
     document_number = models.CharField(max_length=16, unique=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
