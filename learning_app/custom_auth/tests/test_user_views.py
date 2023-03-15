@@ -1,7 +1,7 @@
 from custom_auth.models import User
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, force_authenticate
 
 from .factories import UserFactory
 
@@ -98,3 +98,33 @@ class TestUserViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("password", response.data)
+
+
+    def test_activate_email(self):
+        pass
+
+
+    def test_reset_password(self):
+        """
+        Ensure that authorised user can change their password.
+        """
+        self.user.email_confirmed = True
+        self.user.is_active = True
+        self.user.set_password("eib31wf-je345owb-pon")
+        old_password = self.user.password
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse("user-reset-password")
+      
+        data = {
+            "old_password": "eib31wf-je345owb-pon",
+            "password": "12sdf-456gh-789",
+            "confirmation_password": "12sdf-456gh-789",
+        }
+
+        response = self.client.post(url, data, format="json")
+        user = User.objects.filter(email=self.user.email).first()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(user.password, old_password)
+        
