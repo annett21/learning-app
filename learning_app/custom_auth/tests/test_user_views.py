@@ -1,8 +1,15 @@
+from datetime import datetime, timedelta
+
+import time_machine
 from custom_auth.models import User
+from django.conf import settings
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from ..tokens import account_activation_token
 from .factories import UserFactory
 
 
@@ -100,7 +107,44 @@ class TestUserViewSet(APITestCase):
         self.assertIn("password", response.data)
 
     def test_activate_email(self):
-        pass
+        """
+        Ensure that email was confirmed.
+        """
+        self.user.is_active = True
+        self.user.set_password("eib31wf-je345owb-pon")
+        self.user.save()
+        uid64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = account_activation_token.make_token(self.user)
+
+        url = reverse("user-activate-email")
+        data = {"uidb64": uid64, "token": token}
+        response = self.client.get(url, data)
+        self.user.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(self.user.email_confirmed)
+
+    def test_activate_email_expire_token(self):
+        """
+        Ensure that email cannot be confirmed when token expired.
+        """
+        self.user.is_active = True
+        self.user.set_password("eib31wf-je345owb-pon")
+        self.user.save()
+        uid64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = account_activation_token.make_token(self.user)
+
+        url = reverse("user-activate-email")
+        data = {"uidb64": uid64, "token": token}
+        exp_date = datetime.now() + timedelta(
+            days=settings.PASSWORD_RESET_TIMEOUT + 1
+        )
+        with time_machine.travel(exp_date):
+            response = self.client.get(url, data)
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.email_confirmed)
 
     def test_reset_password(self):
         """
@@ -170,7 +214,7 @@ class TestUserViewSet(APITestCase):
 
         response = self.client.patch(url, data, format="json")
         self.user.refresh_from_db()
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(self.user.first_name, old_first_name)
         self.assertNotEqual(self.user.last_name, old_last_name)
