@@ -148,3 +148,30 @@ class TestUserViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(self.user.email, old_email)
+
+    def test_update_profile(self):
+        """
+        Ensure that authorised user can change their first_name, last_name and document_number.
+        """
+        self.user.is_active = True
+        self.user.set_password("eib31wf-je345owb-pon")
+        self.user.save()
+        old_first_name = self.user.first_name
+        old_last_name = self.user.last_name
+        old_document_number = self.user.document_number
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse("user-detail", args=(self.user.id,))
+        data = {
+            "first_name": "Test",
+            "last_name": "Today",
+            "document_number": "1235684390432",
+        }
+
+        response = self.client.patch(url, data, format="json")
+        self.user.refresh_from_db()
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(self.user.first_name, old_first_name)
+        self.assertNotEqual(self.user.last_name, old_last_name)
+        self.assertNotEqual(self.user.document_number, old_document_number)
