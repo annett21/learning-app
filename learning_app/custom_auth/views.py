@@ -1,23 +1,33 @@
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import (ListModelMixin, RetrieveModelMixin,
-                                   UpdateModelMixin)
+from rest_framework.mixins import (
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .models import User
 from .permissions import IsEmailConfirmed
-from .serializers import (ActivateEmailParamsSerializer,
-                          ChangePasswordSerializer, EmailSerializer,
-                          RegistrationSerializer, UserSerializer)
+from .serializers import (
+    ActivateEmailParamsSerializer,
+    ChangePasswordSerializer,
+    EmailSerializer,
+    RegistrationSerializer,
+    UserSerializer,
+)
 from .tasks import send_email
 from .tokens import account_activation_token
 
 
-class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
+class UserViewSet(
+    RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet
+):
     """
     A viewset that provides the retrieve, list and update model actions.
     """
@@ -26,6 +36,11 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(
+        method="POST",
+        request_body=RegistrationSerializer,
+        responses={200: ""},
+    )
     @action(methods=["post"], detail=False, permission_classes=[AllowAny])
     def register(self, request):
         """
@@ -85,6 +100,11 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         """
         return Response("Pong!")
 
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=ChangePasswordSerializer,
+        responses={200: ""},
+    )
     @action(
         methods=["post", "get"],
         detail=False,
@@ -113,6 +133,11 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         )
         return Response(status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=EmailSerializer,
+        responses={200: ""},
+    )
     @action(
         methods=["post", "get"],
         detail=False,
