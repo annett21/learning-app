@@ -1,4 +1,3 @@
-from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q
 from django.utils.encoding import force_str
@@ -70,8 +69,7 @@ class ChangePasswordSerializer(PasswordValidationMixin, Serializer):
     confirmation_password = serializers.CharField(max_length=128, write_only=True, required=True)
 
     def validate_old_password(self, old_password):
-        password = self.context["user"].password
-        if not check_password(old_password, password):
+        if not self.context["user"].check_password(old_password):
             raise serializers.ValidationError("Wrong password.")
         return old_password
     
