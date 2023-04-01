@@ -15,11 +15,8 @@ psycopg2 = "^2.9.5"
 six = "^1.16.0"
 celery = {extras = ["redis"], version = "^5.2.7"}
 factory-boy = "^3.2.1"
-<<<<<<< HEAD
 drf-yasg = "^1.21.5"
-=======
 time-machine = "^2.9.0"
->>>>>>> develop
 
 [tool.poetry.group.dev.dependencies]
 ptpython = "^3.0.22"
