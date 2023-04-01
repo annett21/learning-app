@@ -53,5 +53,12 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         "Is the user a member of staff?"
-        if self.role == self.Role.ADMIN:
-            return True
+        return self.role == self.Role.ADMIN
+
+    @property
+    def is_professor(self):
+        return self.role == self.Role.PROFESSOR
+
+    @property
+    def is_student(self):
+        return self.role == self.Role.STUDENT
