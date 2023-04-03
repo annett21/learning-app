@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "custom_auth",
     "course",
+    "course_task",
     "rest_framework.authtoken",
     "drf_yasg",
 ]
