@@ -1,5 +1,6 @@
 from custom_auth.permissions import IsProfessor, IsStudent
 from django.utils.decorators import method_decorator
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -12,14 +13,30 @@ from .serializers import TaskSerializer
     name="retrieve",
     decorator=swagger_auto_schema(
         operation_description="Returns a taks belonging to professor's courses. "
-        "Can be filtered by course_id."
+        "Can be filtered by course_id.",
+        manual_parameters=[
+            openapi.Parameter(
+                "course_id",
+                openapi.IN_QUERY,
+                description="Filter by course",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
     ),
 )
 @method_decorator(
     name="list",
     decorator=swagger_auto_schema(
         operation_description="Returns a list tasks belonging to professor's courses. "
-        "Can be filtered by course_id."
+        "Can be filtered by course_id.",
+        manual_parameters=[
+            openapi.Parameter(
+                "course_id",
+                openapi.IN_QUERY,
+                description="Filter by course",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
     ),
 )
 @method_decorator(
