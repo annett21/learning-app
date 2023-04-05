@@ -38,6 +38,7 @@ urlpatterns = [
     path("", include("custom_auth.urls")),
     path("", include("course.urls")),
     path("", include("course_task.urls")),
+    path("", include("task_result.urls")),
     path("login/", views.obtain_auth_token),
     path(
         "",
