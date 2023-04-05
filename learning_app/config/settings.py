@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "custom_auth",
     "course",
     "course_task",
+    "task_result",
     "rest_framework.authtoken",
     "drf_yasg",
 ]
@@ -130,6 +131,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+MEDIA_ROOT = "media/"
+MEDIA_URL = "media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

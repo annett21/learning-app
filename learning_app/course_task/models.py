@@ -23,7 +23,7 @@ class Task(models.Model):
         unique_together = ("title", "course")
 
     def __str__(self):
-        return f"{self.id} - {self.title}"
+        return f"{self.title[:10]} ({self.id})"
 
     def clean(self):
         super().clean()
@@ -40,4 +40,4 @@ class Question(models.Model):
     )
 
     def __str__(self):
-        return f"{self.id} - {self.text[:20]}"
+        return f"{self.text[:10]} ({self.id})"
