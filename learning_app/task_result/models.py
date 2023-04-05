@@ -32,6 +32,8 @@ class Answer(models.Model):
         super().clean()
 
         if self.question.task.course not in self.student.studied_courses.all():
-            raise ValidationError(
-                "The question doesn't belong to user's courses"
-            )
+            err = "The question doesn't belong to user's courses."
+            raise ValidationError(err)
+
+        if not self.text and not self.attachment:
+            raise ValidationError("Text or attachment is required.")
