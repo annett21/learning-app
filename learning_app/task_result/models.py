@@ -1,4 +1,4 @@
-from course_task.models import Question
+from course_task.models import Question, Task
 from custom_auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
@@ -6,7 +6,7 @@ from django.db import models
 
 
 def student_directory_path(instance, filename):
-    """file will be uploaded to MEDIA_ROOT/answers/student_<id>/<filename>"""
+    """File will be uploaded to MEDIA_ROOT/answers/student_<id>/<filename>"""
     return f"answers/student_{instance.student.id}/{filename}"
 
 
@@ -37,3 +37,19 @@ class Answer(models.Model):
 
         if not self.text and not self.attachment:
             raise ValidationError("Text or attachment is required.")
+
+
+class Result(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    task = models.ForeignKey(
+        Task, on_delete=models.CASCADE, related_name="results"
+    )
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="results"
+    )
+    grade = models.PositiveSmallIntegerField(
+        blank=True, null=True, validators=(MaxValueValidator(100),)
+    )
+
+    def __str__(self):
+        return f"Result ({self.id})"
