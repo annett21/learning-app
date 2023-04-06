@@ -36,5 +36,4 @@ class StudentAnswerUpdateSerializer(StudentAnswerSerializer):
     class Meta(StudentAnswerSerializer.Meta):
         read_only_fields = StudentAnswerSerializer.Meta.read_only_fields + (
             "question",
-            "student",
         )

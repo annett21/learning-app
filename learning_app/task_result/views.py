@@ -6,6 +6,7 @@ from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -50,8 +51,15 @@ class BaseAnswerViewSet(GenericViewSet):
 @method_decorator(
     name="update",
     decorator=swagger_auto_schema(
-        operation_description="Updates a answer. "
-        "Can be updated only grade field."
+        operation_description="Updates an answer. "
+        "Only grage field can be updated."
+    ),
+)
+@method_decorator(
+    name="partial_update",
+    decorator=swagger_auto_schema(
+        operation_description="Updates an answer. "
+        "Only grage field can be updated."
     ),
 )
 class ProfessorAnswerViewSet(
@@ -70,6 +78,28 @@ class ProfessorAnswerViewSet(
         return self.request.user.profess_courses.all()
 
 
+@method_decorator(
+    name="list",
+    decorator=swagger_auto_schema(
+        operation_description="Returns a list of all answers belonging to "
+        "students's courses. Can be filtered by task_id.",
+        manual_parameters=[
+            openapi.Parameter(
+                "task_id",
+                openapi.IN_QUERY,
+                description="Filter by task",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+    ),
+)
+@method_decorator(
+    name="create",
+    decorator=swagger_auto_schema(
+        operation_description="Creates an answer. "
+        "Authtenticated user will be used as student."
+    ),
+)
 class StudentAnswerViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -94,7 +124,28 @@ class StudentAnswerViewSet(
     def allowed_courses(self):
         return self.request.user.studied_courses.all()
 
-    @action(methods=("post",), detail=True)
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "attachment",
+                openapi.IN_FORM,
+                description="Attachment file.",
+                type=openapi.TYPE_FILE,
+                required=True,
+            )
+        ],
+        responses={
+            400: "Invalid data in uploaded file",
+            404: "Not found",
+            200: "Success",
+        },
+    )
+    @action(
+        methods=("post",),
+        detail=True,
+        parser_classes=(MultiPartParser,),
+        serializer_classes=None,
+    )
     def upload_attachment(self, request, pk=None):
         answer = get_object_or_404(self.get_queryset(), pk=pk)
         answer.attachment = request.FILES.get("attachment")
