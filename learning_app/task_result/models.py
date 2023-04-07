@@ -51,5 +51,8 @@ class Result(models.Model):
         blank=True, null=True, validators=(MaxValueValidator(100),)
     )
 
+    class Meta:
+        unique_together = ("task", "student")
+
     def __str__(self):
         return f"Result ({self.id})"

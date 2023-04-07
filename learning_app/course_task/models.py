@@ -27,7 +27,7 @@ class Task(models.Model):
 
     def clean(self):
         super().clean()
-        if self.start_at >= self.end_at:
+        if self.start_at and self.end_at and self.start_at >= self.end_at:
             raise ValidationError(
                 "'Start at' field can't be greater than 'End at' field"
             )

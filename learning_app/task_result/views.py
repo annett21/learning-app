@@ -11,11 +11,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .models import Answer
+from .models import Answer, Result
 from .serializers import (
     ProfessorAnswerSerializer,
+    ProfessorResultSerializer,
     StudentAnswerSerializer,
     StudentAnswerUpdateSerializer,
+    StudentResultSerializer,
 )
 
 
@@ -151,3 +153,32 @@ class StudentAnswerViewSet(
         answer.attachment = request.FILES.get("attachment")
         answer.save()
         return Response(status=status.HTTP_200_OK)
+
+
+class ProfessorResultViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    GenericViewSet,
+):
+    queryset = Result.objects.all().order_by("-id")
+    permission_classes = (IsAuthenticated, IsProfessor)
+    serializer_class = ProfessorResultSerializer
+
+    def get_queryset(self):
+        professor = self.request.user
+        return super().get_queryset().filter(task__course__professor=professor)
+
+
+class StudentResultViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Result.objects.all().order_by("-id")
+    permission_classes = (IsAuthenticated, IsStudent)
+    serializer_class = StudentResultSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(student=self.request.user)
