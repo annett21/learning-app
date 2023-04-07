@@ -54,14 +54,14 @@ class BaseAnswerViewSet(GenericViewSet):
     name="update",
     decorator=swagger_auto_schema(
         operation_description="Updates an answer. "
-        "Only grage field can be updated."
+        "Only grade field can be updated."
     ),
 )
 @method_decorator(
     name="partial_update",
     decorator=swagger_auto_schema(
         operation_description="Updates an answer. "
-        "Only grage field can be updated."
+        "Only grade field can be updated."
     ),
 )
 class ProfessorAnswerViewSet(
@@ -155,6 +155,20 @@ class StudentAnswerViewSet(
         return Response(status=status.HTTP_200_OK)
 
 
+@method_decorator(
+    name="update",
+    decorator=swagger_auto_schema(
+        operation_description="Updates a result. "
+        "Only grade field can be updated."
+    ),
+)
+@method_decorator(
+    name="partial_update",
+    decorator=swagger_auto_schema(
+        operation_description="Updates a result. "
+        "Only grade field can be updated."
+    ),
+)
 class ProfessorResultViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -170,6 +184,13 @@ class ProfessorResultViewSet(
         return super().get_queryset().filter(task__course__professor=professor)
 
 
+@method_decorator(
+    name="create",
+    decorator=swagger_auto_schema(
+        operation_description="Creates a result. "
+        "Authtenticated user will be used as student."
+    ),
+)
 class StudentResultViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
