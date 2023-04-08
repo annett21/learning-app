@@ -8,15 +8,15 @@ packages = [{include = "learning_app"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-Django = "^4.1.7"
-djangorestframework = "^3.14.0"
-python-dotenv = "^0.21.1"
-psycopg2 = "^2.9.5"
-six = "^1.16.0"
-celery = {extras = ["redis"], version = "^5.2.7"}
-factory-boy = "^3.2.1"
-drf-yasg = "^1.21.5"
-time-machine = "^2.9.0"
+Django = "4.1.7"
+djangorestframework = "3.14.0"
+python-dotenv = "0.21.1"
+six = "1.16.0"
+celery = {extras = ["redis"], version = "5.2.7"}
+factory-boy = "3.2.1"
+drf-yasg = "1.21.5"
+time-machine = "2.9.0"
+psycopg2-binary = "2.9.6"
 
 [tool.poetry.group.dev.dependencies]
 ptpython = "^3.0.22"
