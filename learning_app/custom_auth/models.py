@@ -6,7 +6,9 @@ from django.utils.translation import gettext_lazy as _
 class UserManager(BaseUserManager):
     def create_superuser(self, email, password):
         superuser = self.model(
-            email=self.normalize_email(email), role=User.Role.ADMIN
+            email=self.normalize_email(email),
+            role=User.Role.ADMIN,
+            is_active=True,
         )
         superuser.set_password(password)
         superuser.save(using=self._db)
@@ -31,7 +33,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=16, blank=True)
     email = models.EmailField(unique=True)
     email_confirmed = models.BooleanField(default=False)
-    document_number = models.CharField(max_length=16, unique=True)
+    document_number = models.CharField(max_length=16, null=True, unique=True)
     is_active = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
