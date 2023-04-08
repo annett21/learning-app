@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+  app:
+    command: > 
+      sh -c 
+      "python learning_app/manage.py migrate && 
+      python learning_app/manage.py runserver 0.0.0.0:8000"
+    build: .
+    volumes:
+      - .:/learning_app
+    ports:
+      - "8000:8000"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14-bullseye
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=learning_app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis:alpine
+
+  celery:
+    restart: always
+    build: .
+    command: >
+      sh -c 
+      "cd learning_app && 
+      celery -A config worker -l info"
+    volumes:
+      - .:/learning_app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_DB=learning_app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+      - redis
+      - app
+
+volumes:
+  postgres_data:
+
+# use this command to create superuser
+# docker compose exec app python learning_app/manage.py createsuperuser

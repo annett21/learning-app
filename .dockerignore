@@ -1,0 +1,6 @@
+.git
+.venv
+.vscode
+.env_example
+.gitignore
+learning_app/media/
