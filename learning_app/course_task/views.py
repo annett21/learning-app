@@ -77,6 +77,9 @@ class ProfessorTaskViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsProfessor)
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Task.objects.none()
+
         qs = super().get_queryset().filter(course__professor=self.request.user)
         course_id = self.request.query_params.get("course_id")
         if course_id:
@@ -104,6 +107,9 @@ class StudentTaskViewSet(ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticated, IsStudent)
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Task.objects.none()
+
         qs = super().get_queryset().filter(course__students=self.request.user)
         course_id = self.request.query_params.get("course_id")
         if course_id:

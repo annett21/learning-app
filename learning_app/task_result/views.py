@@ -25,6 +25,9 @@ class BaseAnswerViewSet(GenericViewSet):
     queryset = Answer.objects.all().order_by("-id")
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Answer.objects.none()
+
         qs = super().get_queryset()
         qs = qs.filter(question__task__course__in=self.allowed_courses)
 
@@ -117,6 +120,9 @@ class StudentAnswerViewSet(
     }
 
     def get_serializer_class(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return StudentAnswerSerializer
+
         return (
             self.serializer_classes.get(self.action)
             or self.serializer_classes["default"]
@@ -180,6 +186,9 @@ class ProfessorResultViewSet(
     serializer_class = ProfessorResultSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Result.objects.none()
+
         professor = self.request.user
         return super().get_queryset().filter(task__course__professor=professor)
 
@@ -202,4 +211,7 @@ class StudentResultViewSet(
     serializer_class = StudentResultSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Result.objects.none()
+
         return super().get_queryset().filter(student=self.request.user)

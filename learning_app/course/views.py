@@ -75,6 +75,9 @@ class ProfessorCourseViewSet(ModelViewSet):
     search_fields = ("title",)
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Course.objects.none()
+
         return super().get_queryset().filter(professor=self.request.user)
 
 
@@ -98,6 +101,9 @@ class StudentCourseViewSet(ReadOnlyModelViewSet):
     search_fields = ("title", "professor__first_name", "professor__last_name")
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Course.objects.none()
+
         return super().get_queryset().filter(students=self.request.user)
 
     @action(
