@@ -1,5 +1,5 @@
 # learning-app
-This is an app for educational purposes. Provides viewsets for registration, professor and student. Also has a guest role for users to get list of all courses. The main features were created for student and professor needs. They allow to join the course and complete the tasks questions, and a professor user can create courses, tasks and grade them. To know more [see documentstion](https://http://127.0.0.1:8000).
+This is an app for educational purposes. Provides viewsets for registration, professor and student. Also has a guest role for users to get list of all courses. The main features were created for student and professor needs. They allow to join the course and complete the tasks questions, and a professor user can create courses, tasks and grade them. To know more [see documentation](127.0.0.1:8000).
 
 
 ## `Requirements:`
